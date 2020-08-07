@@ -50,10 +50,27 @@ describe('functions', () => {
     ].forEach(
       ([linesRate, thresholdAlert, thresholdWarning, level]) => {
         const metric = { lines: { rate: linesRate } };
+        const metricWithDiff = { lines: { rate: linesRate }, diff: { hasDropped: true } };
         const options = { thresholdAlert, thresholdWarning };
         expect(parser.calculateLevel(metric, options)).toStrictEqual(level);
+        expect(parser.calculateLevel(metricWithDiff, options)).toStrictEqual('critical');
       },
     );
+  });
+
+  it('calculates diff', async () => {
+    expect.hasAssertions();
+
+    const metric = {
+      lines: { rate: 10 }, statements: { rate: 51 }, branches: { rate: 48 }, methods: { rate: 33 },
+    };
+    const baseMetric = {
+      lines: { rate: 11 }, statements: {}, branches: {}, methods: {},
+    };
+    expect(parser.calculateDiff(metric, baseMetric)).toMatchObject({
+      lines: '-1.00',
+      hasDropped: true,
+    });
   });
 
   it('generates status', async () => {
@@ -91,6 +108,17 @@ describe('functions', () => {
     })).toStrictEqual({
       state: 'success',
       description: `Success: Coverage - ${rate}%`,
+      target_url: targetUrl,
+      context: statusContext,
+    });
+
+    expect(parser.generateStatus({
+      targetUrl,
+      statusContext,
+      metric: { lines: { rate }, level: 'critical' },
+    })).toStrictEqual({
+      state: 'failure',
+      description: 'Critical: Coverage has dropped',
       target_url: targetUrl,
       context: statusContext,
     });
@@ -144,15 +172,23 @@ describe('functions', () => {
         rate: 40,
       },
       level: 'yellow',
+      diff: {
+        statements: 1,
+        lines: 2,
+        methods: 3,
+        branches: 4,
+      },
     };
 
     const expectedString = `<!-- coverage-monitor-action: Coverage Report -->
 ## Coverage Report
 
-|  Totals | ![Coverage](https://img.shields.io/static/v1?label=coverage&message=20%&color=yellow) |
-| :-- | --: |
-| Statements: | 20% ( 2 / 10 ) |
-| Methods: | 30% ( 3 / 10 ) |
+|  Totals | ![Coverage](https://img.shields.io/static/v1?label=coverage&message=20%&color=yellow) | Diff |
+| :-- | -- | --: |
+| Lines: | 20% ( 2 / 10 ) | 2% |
+| Branches: | 40% ( 4 / 10 ) | 4% |
+| Statements: | 10% ( 1 / 10 ) | 1% |
+| Methods: | 30% ( 3 / 10 ) | 3% |
 `;
 
     expect(parser.generateTable({ metric, commentContext: 'Coverage Report' })).toStrictEqual(expectedString);
@@ -184,6 +220,8 @@ describe('functions', () => {
       statusContext: 'Coverage',
       commentContext: 'Coverage Report',
       commentMode: 'replace',
+      baseCloverFile: undefined,
+      diffTolerance: 0,
     };
 
     const reader = createConfigReader(inputs);
@@ -210,6 +248,8 @@ describe('functions', () => {
       statusContext: 'Coverage Report',
       commentContext: 'Coverage Report',
       commentMode: 'replace',
+      baseCloverFile: undefined,
+      diffTolerance: 0,
     };
 
     const reader = createConfigReader(inputs);
@@ -231,6 +271,8 @@ describe('functions', () => {
       statusContext: 'Coverage',
       commentContext: 'Coverage Report',
       commentMode: 'replace',
+      baseCloverFile: 'baseClover.xml',
+      diffTolerance: 99,
     };
 
     const expected = {
@@ -243,6 +285,8 @@ describe('functions', () => {
       statusContext: 'Coverage',
       commentContext: 'Coverage Report',
       commentMode: 'replace',
+      baseCloverFile: 'baseClover.xml',
+      diffTolerance: 99,
     };
 
     const reader = createConfigReader(inputs);
@@ -270,6 +314,8 @@ describe('functions', () => {
       statusContext: 'Coverage Report',
       commentContext: 'Coverage Report',
       commentMode: 'replace',
+      baseCloverFile: undefined,
+      diffTolerance: 0,
     };
 
     const reader = createConfigReader(inputs);

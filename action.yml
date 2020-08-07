@@ -10,6 +10,13 @@ inputs:
   clover_file:
     description: "Path to Clover XML file."
     required: true
+  base_clover_file:
+    description: "Path to base Clover XML file."
+    required: false
+  diff_tolerance:
+    description: "Tolerance for coverage drop"
+    required: false
+    default: '0'
   check:
     description: "Whether check the coverage thresholds."
     required: false

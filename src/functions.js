@@ -25,8 +25,34 @@ function calcRate({ total, covered }) {
     : 0;
 }
 
+function calculateDiff(metric, baseMetric = {}, diffTolerance = 0) {
+  const diff = {
+    lines: 0,
+    statements: 0,
+    methods: 0,
+    branches: 0,
+    hasDropped: false
+  };
+  if (!baseMetric || !baseMetric.lines) {
+    return diff;
+  }
+  diff.lines = Number(metric.lines.rate - baseMetric.lines.rate).toFixed(2);
+  diff.statements = Number(metric.statements.rate - baseMetric.statements.rate).toFixed(2);
+  diff.methods = Number(metric.methods.rate - baseMetric.methods.rate).toFixed(2);
+  diff.branches = Number(metric.branches.rate - baseMetric.branches.rate).toFixed(2);
+  diff.hasDropped = diff.lines + diffTolerance < 0
+    || diff.statements + diffTolerance < 0
+    || diff.methods + diffTolerance < 0
+    || diff.branches + diffTolerance < 0;
+  return diff;
+}
+
 function calculateLevel(metric, { thresholdAlert = 50, thresholdWarning = 90 } = {}) {
   const { rate: linesRate } = metric.lines;
+
+  if(metric.diff && metric.diff.hasDropped) {
+    return 'critical';
+  }
 
   if (linesRate < thresholdAlert) {
     return 'red';
@@ -39,7 +65,7 @@ function calculateLevel(metric, { thresholdAlert = 50, thresholdWarning = 90 } =
   return 'green';
 }
 
-function readMetric(coverage, { thresholdAlert = 50, thresholdWarning = 90 } = {}) {
+function readMetric(coverage, { thresholdAlert = 50, thresholdWarning = 90, baseMetric, diffTolerance = 0 } = {}) {
   const data = coverage.coverage.project[0].metrics[0].$;
   const metric = {
     statements: {
@@ -65,6 +91,7 @@ function readMetric(coverage, { thresholdAlert = 50, thresholdWarning = 90 } = {
   metric.methods.rate = calcRate(metric.methods);
   metric.branches.rate = calcRate(metric.branches);
 
+  metric.diff = calculateDiff(metric, baseMetric, diffTolerance);
   metric.level = calculateLevel(metric, { thresholdAlert, thresholdWarning });
 
   return metric;
@@ -95,10 +122,12 @@ function generateTable({
   return `${generateCommentHeader({ commentContext })}
 ## ${commentContext}${generateEmoji(metric)}
 
-|  Totals | ![Coverage](${generateBadgeUrl(metric)}) |
-| :-- | --: |
-| Statements: | ${generateInfo(metric.lines)} |
-| Methods: | ${generateInfo(metric.methods)} |
+|  Totals | ![Coverage](${generateBadgeUrl(metric)}) | Diff |
+| :-- | -- | --: |
+| Lines: | ${generateInfo(metric.lines)} | ${metric.diff.lines}% |
+| Branches: | ${generateInfo(metric.branches)} | ${metric.diff.branches}% |
+| Statements: | ${generateInfo(metric.statements)} | ${metric.diff.statements}% |
+| Methods: | ${generateInfo(metric.methods)} | ${metric.diff.methods}% |
 `;
 }
 
@@ -107,6 +136,15 @@ function generateStatus({
   targetUrl,
   statusContext,
 }) {
+  if (level === 'critical') {
+    return {
+      state: 'failure',
+      description: 'Critical: Coverage has dropped',
+      target_url: targetUrl,
+      context: statusContext,
+    };
+  }
+
   if (level === 'red') {
     return {
       state: 'failure',
@@ -148,6 +186,8 @@ function loadConfig({ getInput }) {
   const check = toBool(getInput('check'));
   const githubToken = getInput('github_token', { required: true });
   const cloverFile = getInput('clover_file', { required: true });
+  const baseCloverFile = getInput('base_clover_file');
+  const diffTolerance = toInt(getInput('diff_tolerance') || 0);
   const thresholdAlert = toInt(getInput('threshold_alert') || 90);
   const thresholdWarning = toInt(getInput('threshold_warning') || 50);
   const statusContext = getInput('status_context') || 'Coverage Report';
@@ -163,6 +203,8 @@ function loadConfig({ getInput }) {
     check,
     githubToken,
     cloverFile,
+    baseCloverFile,
+    diffTolerance,
     thresholdAlert,
     thresholdWarning,
     statusContext,
@@ -177,6 +219,7 @@ module.exports = {
   generateBadgeUrl,
   generateEmoji,
   generateTable,
+  calculateDiff,
   calculateLevel,
   generateStatus,
   loadConfig,

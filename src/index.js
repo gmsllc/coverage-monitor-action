@@ -26,6 +26,8 @@ async function run() {
     check,
     githubToken,
     cloverFile,
+    baseCloverFile,
+    diffTolerance,
     thresholdAlert,
     thresholdWarning,
     statusContext,
@@ -49,7 +51,9 @@ async function run() {
   const client = new github.GitHub(githubToken);
 
   const coverage = await readFile(cloverFile);
-  const metric = readMetric(coverage, { thresholdAlert, thresholdWarning });
+  const baseCoverage = baseCloverFile && await readFile(baseCloverFile);
+  const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
+  const metric = readMetric(coverage, { thresholdAlert, thresholdWarning, baseMetric, diffTolerance });
 
   if (check) {
     createStatus({
