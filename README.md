@@ -4,15 +4,16 @@
 [![Latest Version][ico-version]][link-github]
 [![License][ico-license]][link-license]
 
-[ico-github-actions]: https://github.com/slavcodev/coverage-monitor-action/workflows/build/badge.svg
-[ico-version]: https://img.shields.io/github/tag/slavcodev/coverage-monitor-action.svg?label=latest
-[ico-license]: https://img.shields.io/badge/License-MIT-blue.svg
+<!-- [ico-github-actions]: https://github.com/andrzej-kodify/coverage-monitor-action/workflows/build/badge.svg -->
+<!-- [ico-version]: https://img.shields.io/github/tag/andrzej-kodify/coverage-monitor-action.svg?label=latest -->
+<!-- [ico-license]: https://img.shields.io/badge/License-MIT-blue.svg -->
 
-[link-github]: https://github.com/slavcodev/coverage-monitor-action
+[link-github]: https://github.com/andrzej-kodify/coverage-monitor-action
 [link-license]: LICENSE
 [link-contributing]: .github/CONTRIBUTING.md
 
 A GitHub Action that monitor coverage.
+Forked of <https://github.com/slavcodev/coverage-monitor-action|slavcodev/coverage-monitor-action>
 
 ## Usage
 
@@ -49,7 +50,7 @@ jobs:
         run: npm test
 
       - name: Monitor coverage
-        uses: slavcodev/coverage-monitor-action@1.1.0
+        uses: andrzej-kodify/coverage-monitor-action@1.1.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clover_file: "logs/clover.xml"
@@ -59,7 +60,7 @@ jobs:
 
 ## Demo
 
-See [Pull Request #1](https://github.com/slavcodev/coverage-monitor-action/pull/1)
+<!-- See [Pull Request #1](https://github.com/slavcodev/coverage-monitor-action/pull/1) -->
 
 ## Contributing
 

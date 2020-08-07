@@ -1,10 +1,10 @@
-const createStatus = ({
+const createCommitStatus = ({
   client,
   context,
   sha,
   status,
 }) => {
-  client.repos.createStatus({
+  client.repos.createCommitStatus({
     ...context.repo,
     sha,
     ...status,
@@ -118,7 +118,7 @@ const replaceComment = ({
 };
 
 module.exports = {
-  createStatus,
+  createCommitStatus,
   listComments,
   insertComment,
   updateComment,

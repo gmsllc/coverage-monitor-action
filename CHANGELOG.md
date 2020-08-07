@@ -18,6 +18,12 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
+## [1.1.1] 2020-03-02
+
+### Added
+
+- Added base report diff
+
 ## [1.1.0] 2020-03-02
 
 ### Added

@@ -9,7 +9,7 @@ const {
   generateCommentHeader,
 } = require('./functions');
 const {
-  createStatus,
+  createCommitStatus,
   listComments,
   insertComment,
   upsertComment,
@@ -48,15 +48,17 @@ async function run() {
     after: sha,
   } = context.payload;
 
-  const client = new github.GitHub(githubToken);
+  const client = github.getOctokit(githubToken);
 
   const coverage = await readFile(cloverFile);
   const baseCoverage = baseCloverFile && await readFile(baseCloverFile);
   const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
-  const metric = readMetric(coverage, { thresholdAlert, thresholdWarning, baseMetric, diffTolerance });
+  const metric = readMetric(coverage, {
+    thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
+  });
 
   if (check) {
-    createStatus({
+    createCommitStatus({
       client,
       context,
       sha,
