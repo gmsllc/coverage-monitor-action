@@ -38,7 +38,7 @@ function calculateDiff(metric, baseMetric = {}, diffTolerance = 0) {
     statements: 0,
     methods: 0,
     branches: 0,
-    hasDropped: false
+    hasDropped: false,
   };
   if (!baseMetric || !baseMetric.lines) {
     return diff;
@@ -57,7 +57,7 @@ function calculateDiff(metric, baseMetric = {}, diffTolerance = 0) {
 function calculateLevel(metric, { thresholdAlert = 50, thresholdWarning = 90 } = {}) {
   const { rate: linesRate } = metric.lines;
 
-  if(metric.diff && metric.diff.hasDropped) {
+  if (metric.diff && metric.diff.hasDropped) {
     return 'critical';
   }
 
@@ -72,7 +72,9 @@ function calculateLevel(metric, { thresholdAlert = 50, thresholdWarning = 90 } =
   return 'green';
 }
 
-function readMetric(coverage, { thresholdAlert = 50, thresholdWarning = 90, baseMetric, diffTolerance = 0 } = {}) {
+function readMetric(coverage, {
+  thresholdAlert = 50, thresholdWarning = 90, baseMetric, diffTolerance = 0,
+} = {}) {
   const data = coverage.coverage.project[0].metrics[0].$;
   const metric = {
     statements: {
@@ -191,16 +193,20 @@ function toInt(value) {
 function loadConfig({ getInput }) {
   const comment = toBool(getInput('comment'));
   const check = toBool(getInput('check'));
-  const githubToken = getInput('github_token', { required: true });
-  const cloverFile = getInput('clover_file', { required: true });
-  const baseCloverFile = getInput('base_clover_file');
-  const ignoreMissingBase = toBool(getInput('ignore_missing_base'));
-  const diffTolerance = toInt(getInput('diff_tolerance') || 0);
-  const thresholdAlert = toInt(getInput('threshold_alert') || 90);
-  const thresholdWarning = toInt(getInput('threshold_warning') || 50);
-  const statusContext = getInput('status_context') || 'Coverage Report';
-  const commentContext = getInput('comment_context') || 'Coverage Report';
-  let commentMode = getInput('comment_mode');
+  const githubToken = getInput('github-token', { required: true });
+  const cloverFile = getInput('clover-file', { required: true });
+  const baseCloverFile = getInput('base-clover-file');
+  const ignoreMissingBase = toBool(getInput('ignore-missing-base'));
+  const diffTolerance = toInt(getInput('diff-tolerance') || 0);
+  const thresholdAlert = toInt(getInput('threshold-alert') || 90);
+  const thresholdWarning = toInt(getInput('threshold-warning') || 50);
+  const statusContext = getInput('status-context') || 'Coverage Report';
+  const commentContext = getInput('comment-context') || 'Coverage Report';
+  const s3Bucket = getInput('s3-bucket');
+  const s3KeyPrefix = getInput('s3-key-prefix');
+  const s3AccessKeyId = getInput('s3-access-key-id');
+  const s3SecretAccessKey = getInput('s3-secret-access-key');
+  let commentMode = getInput('comment-mode');
 
   if (!['replace', 'update', 'insert'].includes(commentMode)) {
     commentMode = 'replace';
@@ -219,6 +225,10 @@ function loadConfig({ getInput }) {
     statusContext,
     commentContext,
     commentMode,
+    s3Bucket,
+    s3KeyPrefix,
+    s3AccessKeyId,
+    s3SecretAccessKey,
   };
 }
 

@@ -198,7 +198,7 @@ describe('functions', () => {
     return {
       getInput(name) {
         return inputs[
-          name.split('_').reduce(
+          name.split('-').reduce(
             (carry, item) => (carry === null ? item : `${carry}${item[0].toUpperCase() + item.slice(1)}`),
             null,
           )
