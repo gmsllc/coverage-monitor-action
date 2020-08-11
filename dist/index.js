@@ -7945,6 +7945,7 @@ async function run() {
     githubToken,
     cloverFile,
     baseCloverFile,
+    ignoreMissingBase,
     diffTolerance,
     thresholdAlert,
     thresholdWarning,
@@ -7969,7 +7970,7 @@ async function run() {
   const client = github.getOctokit(githubToken);
 
   const coverage = await readFile(cloverFile);
-  const baseCoverage = baseCloverFile && await readFile(baseCloverFile);
+  const baseCoverage = baseCloverFile && await readFile(baseCloverFile, ignoreMissingBase);
   const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
   const metric = readMetric(coverage, {
     thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
@@ -11932,8 +11933,15 @@ fs.readFileAsync = (filename) => new Promise(
 
 const parser = new xml2js.Parser(/* options */);
 
-async function readFile(filename) {
-  return parser.parseStringPromise(await fs.readFileAsync(filename));
+async function readFile(filename, ignoreError = false) {
+  try {
+    return parser.parseStringPromise(await fs.readFileAsync(filename));
+  } catch (error) {
+    if (!ignoreError) {
+      throw error;
+    }
+  }
+  return undefined;
 }
 
 function calcRate({ total, covered }) {
@@ -12104,6 +12112,7 @@ function loadConfig({ getInput }) {
   const githubToken = getInput('github_token', { required: true });
   const cloverFile = getInput('clover_file', { required: true });
   const baseCloverFile = getInput('base_clover_file');
+  const ignoreMissingBase = toBool(getInput('ignore_missing_base'));
   const diffTolerance = toInt(getInput('diff_tolerance') || 0);
   const thresholdAlert = toInt(getInput('threshold_alert') || 90);
   const thresholdWarning = toInt(getInput('threshold_warning') || 50);
@@ -12121,6 +12130,7 @@ function loadConfig({ getInput }) {
     githubToken,
     cloverFile,
     baseCloverFile,
+    ignoreMissingBase,
     diffTolerance,
     thresholdAlert,
     thresholdWarning,

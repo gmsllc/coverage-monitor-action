@@ -27,6 +27,7 @@ async function run() {
     githubToken,
     cloverFile,
     baseCloverFile,
+    ignoreMissingBase,
     diffTolerance,
     thresholdAlert,
     thresholdWarning,
@@ -51,7 +52,7 @@ async function run() {
   const client = github.getOctokit(githubToken);
 
   const coverage = await readFile(cloverFile);
-  const baseCoverage = baseCloverFile && await readFile(baseCloverFile);
+  const baseCoverage = baseCloverFile && await readFile(baseCloverFile, ignoreMissingBase);
   const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
   const metric = readMetric(coverage, {
     thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
