@@ -18,25 +18,9 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
-## [1.1.1] 2020-03-02
+## [0.9.0] 2020-08-12
 
 ### Added
 
 - Added base report diff
-
-## [1.1.0] 2020-03-02
-
-### Added
-
-- Added `comment_context` string property, the label posted in comment to differentiate the comment posted by each action.
-- Added `comment_mode` property to control a behaviour for posting comments to a PR. 
-
-## [1.0.1] 2019-11-11
-
-### Fixed
-
-- Fixed the inputs types at which the application did not work correctly, especially for booleans.
-
-## [1.0.0] 2019-11-11
-
-Initial release.
+- Added S3 bucket storage for coverage history

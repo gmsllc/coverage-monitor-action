@@ -41,5 +41,5 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: ./
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          clover_file: "logs/clover.xml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          clover-file: "logs/clover.xml"

@@ -20,21 +20,28 @@ Forked of <https://github.com/slavcodev/coverage-monitor-action|slavcodev/covera
 ### Pre-requisites
 
 Create a workflow .yml file in your repositories .github/workflows directory.
-The action works only with `pull_request` event.
+The action works with `pull_request` event (check coverage and comment) and with `push` event (store coverage report in S3 for diff).
 
 ### Inputs
 
-- `github_token` - The GITHUB_TOKEN secret.
-- `clover_file` - Path to Clover XML file.
+- `github-token` - The GITHUB_TOKEN secret.
+- `clover-file` - Path to Clover XML file.
 - `check` - Whether check the coverage thresholds.
 - `comment` - Whether comment the coverage report.
-- `threshold_alert` - Mark the build as unstable when coverage is less than this threshold.
-- `threshold_warning` - Warning when coverage is less than this threshold.
-- `status_context` - A string label to differentiate this status from the status of other systems.
-- `comment_context` - A string label to differentiate the comment posted by this action.
-- `comment_mode` - A mode for comments, supported: `replace`, `update` or `insert`.
+- `threshold-alert` - Mark the build as unstable when coverage is less than this threshold.
+- `threshold-warning` - Warning when coverage is less than this threshold.
+- `status-context` - A string label to differentiate this status from the status of other systems.
+- `comment-context` - A string label to differentiate the comment posted by this action.
+- `comment-mode` - A mode for comments, supported: `replace`, `update` or `insert`.
+- `base-clover-file` - Path to base Clover XML file. If specified then action won't try to download file from S3.
+- `diff-tolerance` - Tolerance for coverage drop.
+- `ignore-missing-base` - Do not throw an error if base coverage file is missing.
+- `s3-bucket` - AWS S3 Bucket name.
+- `s3-access-key-id` - AWS S3 Access Key Id.
+- `s3-secret-access-key` - AWS S3 Secret Access Key.
+- `s3-key-prefix` - S3 key prefix for coverage report storage inside bucket. Default: `coverage/${repository.full_name}`.
 
-### Example workflow 
+### Example workflow
 
 ~~~yaml
 name: Tests
@@ -50,17 +57,23 @@ jobs:
         run: npm test
 
       - name: Monitor coverage
-        uses: andrzej-kodify/coverage-monitor-action@1.1.1
+        uses: andrzej-kodify/coverage-monitor-action@0.9.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          clover_file: "logs/clover.xml"
-          threshold_alert: 10
-          threshold_warning: 50
+          github-token: ${{ github.token }}
+          clover-file: coverage/clover.xml
+          ignore-missing-base: true
+          diff-tolerance: 0.01
+          threshold-alert: 10
+          threshold-warning: 50
+          s3-bucket: my-bucket
+          s3-access-key-id: ${{ secrets.S3_ACCESS_KEY }}
+          s3-secret-access-key: ${{ secrets.S3_SECRET_KEY }}
+
 ~~~
 
 ## Demo
 
-<!-- See [Pull Request #1](https://github.com/slavcodev/coverage-monitor-action/pull/1) -->
+TBD
 
 ## Contributing
 
