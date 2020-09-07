@@ -43,10 +43,10 @@ function calculateDiff(metric, baseMetric = {}, diffTolerance = 0) {
   if (!baseMetric || !baseMetric.lines) {
     return diff;
   }
-  diff.lines = Number(metric.lines.rate - baseMetric.lines.rate).toFixed(2);
-  diff.statements = Number(metric.statements.rate - baseMetric.statements.rate).toFixed(2);
-  diff.methods = Number(metric.methods.rate - baseMetric.methods.rate).toFixed(2);
-  diff.branches = Number(metric.branches.rate - baseMetric.branches.rate).toFixed(2);
+  diff.lines = Number(Number(metric.lines.rate - baseMetric.lines.rate).toFixed(2));
+  diff.statements = Number(Number(metric.statements.rate - baseMetric.statements.rate).toFixed(2));
+  diff.methods = Number(Number(metric.methods.rate - baseMetric.methods.rate).toFixed(2));
+  diff.branches = Number(Number(metric.branches.rate - baseMetric.branches.rate).toFixed(2));
   diff.hasDropped = diff.lines + diffTolerance < 0
     || diff.statements + diffTolerance < 0
     || diff.methods + diffTolerance < 0
