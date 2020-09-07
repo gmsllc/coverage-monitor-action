@@ -26,9 +26,18 @@ async function s3Download(s3, key, bucket) {
     const params = { Bucket: bucket, Key: key };
     const s3Stream = s3.getObject(params).createReadStream();
     const fileStream = fs.createWriteStream(destPath);
-    s3Stream.on('error', reject);
-    fileStream.on('error', reject);
-    fileStream.on('close', () => { resolve(destPath); });
+    s3Stream.on('error', (err) => {
+      console.warn('S3 read stream error', err);
+      reject(err);
+    });
+    fileStream.on('error', (err) => {
+      console.warn('File write stream error', err);
+      reject(err);
+    });
+    fileStream.on('close', () => {
+      console.log(`Downloaded file`, { ...params, destPath });
+      resolve(destPath);
+    });
     s3Stream.pipe(fileStream);
   });
 }
@@ -39,15 +48,18 @@ async function s3Upload(s3, fileName, key, bucket) {
     const params = { Bucket: bucket, Key: key, Body: fileContent };
     s3.upload(params, (err) => {
       if (err) {
+        console.warn('S3 upload failed', err);
         reject(err);
         return;
       }
+      console.log('S3 upload successful', { bucket, key });
       resolve();
     });
   });
 }
 
 async function run() {
+  const config = loadConfig(core);
   const {
     comment,
     check,
@@ -65,7 +77,9 @@ async function run() {
     s3KeyPrefix,
     s3AccessKeyId,
     s3SecretAccessKey,
-  } = loadConfig(core);
+  } = config;
+
+  console.log('Starting analysis', config);
 
   if (!check && !comment) {
     return;
@@ -103,10 +117,15 @@ async function run() {
         }
         console.warn(`[ignored] Error downloading ${prefix}/${baseGitCommit} from ${s3Bucket}`, err);
       }
+    } else {
+      console.log('Skipped analysis', { baseGitCommit, baseCloverFile });
     }
+  } else {
+    console.log('S3 not configured', { s3Bucket, s3AccessKeyId, s3SecretAccessKey });
   }
 
   if (!github.context.payload.pull_request) {
+    console.log('Not a pull request - exiting');
     return;
   }
 
@@ -173,6 +192,8 @@ async function run() {
           }),
         });
     }
+  } else {
+    console.log('Commenting not enabled');
   }
 }
 

@@ -22,7 +22,7 @@ async function readFile(filename, ignoreError = false) {
     if (!ignoreError) {
       throw error;
     }
-    console.warn('Ignored error while parsing', error);
+    console.warn('[ignored] Error while parsing', error);
   }
   return undefined;
 }

@@ -68,7 +68,7 @@ describe('functions', () => {
       lines: { rate: 11 }, statements: {}, branches: {}, methods: {},
     };
     expect(parser.calculateDiff(metric, baseMetric)).toMatchObject({
-      lines: '-1.00',
+      lines: -1,
       hasDropped: true,
     });
   });
