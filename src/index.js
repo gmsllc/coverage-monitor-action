@@ -86,6 +86,7 @@ async function run() {
   }
 
   const { context } = github;
+  console.log(JSON.stringify(context, null, 2));
   const sha = context.payload.after;
   const prefix = s3KeyPrefix || `coverage/${context.payload.repository.full_name}`;
   const baseGitCommit = (context.payload.pull_request || { base: {} }).base.sha;
