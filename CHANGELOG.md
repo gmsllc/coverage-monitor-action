@@ -18,6 +18,16 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
+## [0.9.1] 2020-09-07
+
+### Fixed
+
+- Fixed diff percentage being converted to string which made coverage decrease faulty
+
+### Added
+
+- Added exponential backoff retry to wait for base branch coverage reports being stored on S3
+
 ## [0.9.0] 2020-08-12
 
 ### Added

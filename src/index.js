@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const AWS = require('aws-sdk');
 const fs = require('fs');
+const { backOff } = require('exponential-backoff');
 
 const {
   readFile,
@@ -91,7 +92,11 @@ async function run() {
     }
     if (baseGitCommit && !baseCloverFile) {
       try {
-        baseCloverFileS3 = await s3Download(s3, `${prefix}/${baseGitCommit}`, s3Bucket);
+        // retry with exponential backoff to wait for base branch builds being stored
+        baseCloverFileS3 = await backOff(() => s3Download(s3, `${prefix}/${baseGitCommit}`, s3Bucket), {
+          numOfAttempts: 5,
+          startingDelay: 10000,
+        });
       } catch (err) {
         if (!ignoreMissingBase) {
           throw err;
