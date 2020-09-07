@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andrzej-kodify/coverage-monitor-action.git"
+    "url": "git+https://github.com/gmsllc/coverage-monitor-action.git"
   },
   "keywords": [
     "actions",
     "coverage",
     "clover"
   ],
-  "author": "Veaceslav Medvedev",
+  "author": "Andrzej Pasterczyk",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.4",

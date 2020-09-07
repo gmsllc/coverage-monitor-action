@@ -4,11 +4,11 @@
 [![Latest Version][ico-version]][link-github]
 [![License][ico-license]][link-license]
 
-<!-- [ico-github-actions]: https://github.com/andrzej-kodify/coverage-monitor-action/workflows/build/badge.svg -->
-<!-- [ico-version]: https://img.shields.io/github/tag/andrzej-kodify/coverage-monitor-action.svg?label=latest -->
+<!-- [ico-github-actions]: https://github.com/gmsllc/coverage-monitor-action/workflows/build/badge.svg -->
+<!-- [ico-version]: https://img.shields.io/github/tag/gmsllc/coverage-monitor-action.svg?label=latest -->
 <!-- [ico-license]: https://img.shields.io/badge/License-MIT-blue.svg -->
 
-[link-github]: https://github.com/andrzej-kodify/coverage-monitor-action
+[link-github]: https://github.com/gmsllc/coverage-monitor-action
 [link-license]: LICENSE
 [link-contributing]: .github/CONTRIBUTING.md
 
@@ -57,7 +57,7 @@ jobs:
         run: npm test
 
       - name: Monitor coverage
-        uses: andrzej-kodify/coverage-monitor-action@0.9.0
+        uses: gmsllc/coverage-monitor-action@0.9.0
         with:
           github-token: ${{ github.token }}
           clover-file: coverage/clover.xml
