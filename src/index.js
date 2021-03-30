@@ -109,8 +109,8 @@ async function run() {
       try {
         // retry with exponential backoff to wait for base branch builds being stored
         baseCloverFileS3 = await backOff(() => s3Download(s3, `${prefix}/${baseGitCommit}`, s3Bucket), {
-          numOfAttempts: 5,
-          startingDelay: 10000,
+          numOfAttempts: 3,
+          startingDelay: 5000,
         });
       } catch (err) {
         if (!ignoreMissingBase) {

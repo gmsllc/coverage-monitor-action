@@ -1,6 +1,6 @@
 {
   "name": "coverage-monitor-action",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "description": "A GitHub Action that monitor coverage.",
   "main": "src/index.js",
