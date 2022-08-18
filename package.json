@@ -21,7 +21,7 @@
   "author": "Andrzej Pasterczyk",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.4",
+    "@actions/core": "^1.9.1",
     "@actions/github": "^4.0.0",
     "aws-sdk": "^2.730.0",
     "exponential-backoff": "^3.1.0",
