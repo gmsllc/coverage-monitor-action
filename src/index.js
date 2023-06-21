@@ -1,6 +1,9 @@
+import { Download, Upload } from '@aws-sdk/lib-storage';
+import { S3Client, S3 } from '@aws-sdk/client-s3';
+
 const core = require('@actions/core');
 const github = require('@actions/github');
-const AWS = require('aws-sdk');
+
 const fs = require('fs');
 const { backOff } = require('exponential-backoff');
 
@@ -21,41 +24,27 @@ const {
 } = require('./github');
 
 async function s3Download(s3, key, bucket) {
-  return new Promise((resolve, reject) => {
-    const destPath = 'baseClover.xml';
-    const params = { Bucket: bucket, Key: key };
-    const s3Stream = s3.getObject(params).createReadStream();
-    const fileStream = fs.createWriteStream(destPath);
-    s3Stream.on('error', (err) => {
-      console.warn('S3 read stream error', err);
-      reject(err);
-    });
-    fileStream.on('error', (err) => {
-      console.warn('File write stream error', err);
-      reject(err);
-    });
-    fileStream.on('close', () => {
-      console.log(`Downloaded file`, { ...params, destPath });
-      resolve(destPath);
-    });
-    s3Stream.pipe(fileStream);
+  const destPath = 'baseClover.xml';
+  const params = { Bucket: bucket, Key: key };
+  const download = new Download({
+    client: s3,
+    params,
   });
+  const { Body } = await download.done();
+  const fileStream = fs.createWriteStream(destPath);
+  Body.pipe(fileStream);
+  return destPath;
 }
 
 async function s3Upload(s3, fileName, key, bucket) {
-  return new Promise((resolve, reject) => {
-    const fileContent = fs.readFileSync(fileName);
-    const params = { Bucket: bucket, Key: key, Body: fileContent };
-    s3.upload(params, (err) => {
-      if (err) {
-        console.warn('S3 upload failed', err);
-        reject(err);
-        return;
-      }
-      console.log('S3 upload successful', { bucket, key });
-      resolve();
-    });
+  const fileContent = fs.readFileSync(fileName);
+  const params = { Bucket: bucket, Key: key, Body: fileContent };
+  const upload = new Upload({
+    client: s3,
+    params,
   });
+  await upload.done();
+  console.log('S3 upload successful', { bucket, key });
 }
 
 async function run() {
@@ -94,10 +83,13 @@ async function run() {
   const prUrl = (context.payload.pull_request || {}).html_url;
 
   const s3 = s3Bucket && s3AccessKeyId && s3SecretAccessKey
-    ? new AWS.S3({
+    ? (new S3({
       accessKeyId: s3AccessKeyId,
       secretAccessKey: s3SecretAccessKey,
-    })
+    }) || new S3Client({
+      accessKeyId: s3AccessKeyId,
+      secretAccessKey: s3SecretAccessKey,
+    }))
     : undefined;
 
   let baseCloverFileS3;
