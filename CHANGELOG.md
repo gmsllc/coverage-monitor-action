@@ -18,6 +18,10 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
+## [0.9.3] 2023-06-21
+
+- Updated deps
+
 ## [0.9.2] 2021-03-30
 
 - Changed number of S3 retry attempts and backoff time
