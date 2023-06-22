@@ -18,6 +18,11 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
+## [0.9.4] 2023-06-22
+
+- Updated deps
+- Fixed github client
+
 ## [0.9.3] 2023-06-21
 
 - Updated deps

@@ -4,7 +4,7 @@ const createCommitStatus = ({
   sha,
   status,
 }) => {
-  client.repos.createCommitStatus({
+  client.rest.repos.createCommitStatus({
     ...context.repo,
     sha,
     ...status,
@@ -17,7 +17,7 @@ const listComments = async ({
   prNumber,
   commentHeader,
 }) => {
-  const { data: existingComments } = await client.issues.listComments({
+  const { data: existingComments } = await client.rest.issues.listComments({
     ...context.repo,
     issue_number: prNumber,
   });
@@ -31,7 +31,7 @@ const insertComment = ({
   prNumber,
   body,
 }) => {
-  client.issues.createComment({
+  client.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
     body,
@@ -44,7 +44,7 @@ const updateComment = ({
   body,
   commentId,
 }) => {
-  client.issues.updateComment({
+  client.rest.issues.updateComment({
     ...context.repo,
     comment_id: commentId,
     body,
@@ -57,7 +57,7 @@ const deleteComments = ({
   comments,
 }) => {
   comments.forEach(({ id }) => {
-    client.issues.deleteComment({
+    client.rest.issues.deleteComment({
       ...context.repo,
       comment_id: id,
     });

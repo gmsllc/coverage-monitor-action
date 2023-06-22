@@ -1,10 +1,10 @@
 import { Download, Upload } from '@aws-sdk/lib-storage';
 import { S3Client, S3 } from '@aws-sdk/client-s3';
+import * as fs from 'fs';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-const fs = require('fs');
 const { backOff } = require('exponential-backoff');
 
 const {

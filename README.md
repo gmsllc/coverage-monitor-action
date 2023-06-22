@@ -57,7 +57,7 @@ jobs:
         run: npm test
 
       - name: Monitor coverage
-        uses: gmsllc/coverage-monitor-action@0.9.3
+        uses: gmsllc/coverage-monitor-action@latest
         with:
           github-token: ${{ github.token }}
           clover-file: coverage/clover.xml
