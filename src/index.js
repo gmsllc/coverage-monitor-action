@@ -83,9 +83,11 @@ async function run() {
     ? (new S3({
       accessKeyId: s3AccessKeyId,
       secretAccessKey: s3SecretAccessKey,
+      region: 'us-east-1',
     }) || new S3Client({
       accessKeyId: s3AccessKeyId,
       secretAccessKey: s3SecretAccessKey,
+      region: 'us-east-1',
     }))
     : undefined;
 
