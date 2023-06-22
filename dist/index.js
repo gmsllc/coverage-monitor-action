@@ -74793,12 +74793,16 @@ async function run() {
 
   const s3 = s3Bucket && s3AccessKeyId && s3SecretAccessKey
     ? (new _aws_sdk_client_s3__WEBPACK_IMPORTED_MODULE_2__.S3({
-      accessKeyId: s3AccessKeyId,
-      secretAccessKey: s3SecretAccessKey,
+      credentials: {
+        accessKeyId: s3AccessKeyId,
+        secretAccessKey: s3SecretAccessKey,
+      },
       region: 'us-east-1',
     }) || new _aws_sdk_client_s3__WEBPACK_IMPORTED_MODULE_2__.S3Client({
-      accessKeyId: s3AccessKeyId,
-      secretAccessKey: s3SecretAccessKey,
+      credentials: {
+        accessKeyId: s3AccessKeyId,
+        secretAccessKey: s3SecretAccessKey,
+      },
       region: 'us-east-1',
     }))
     : undefined;
