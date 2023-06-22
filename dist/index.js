@@ -74738,13 +74738,10 @@ const {
 async function s3Download(s3, key, bucket) {
   const destPath = 'baseClover.xml';
   const params = { Bucket: bucket, Key: key };
-  const download = new _aws_sdk_lib_storage__WEBPACK_IMPORTED_MODULE_0__.Download({
-    client: s3,
-    params,
-  });
-  const { Body } = await download.done();
+  const command = new _aws_sdk_client_s3__WEBPACK_IMPORTED_MODULE_2__.GetObjectCommand(params);
+  const response = await s3.send(command);
   const fileStream = fs__WEBPACK_IMPORTED_MODULE_1__.createWriteStream(destPath);
-  Body.pipe(fileStream);
+  response.Body.pipe(fileStream);
   return destPath;
 }
 

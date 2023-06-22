@@ -1,5 +1,5 @@
-import { Download, Upload } from '@aws-sdk/lib-storage';
-import { S3Client, S3 } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { GetObjectCommand, S3Client, S3 } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 
 const core = require('@actions/core');
@@ -26,13 +26,10 @@ const {
 async function s3Download(s3, key, bucket) {
   const destPath = 'baseClover.xml';
   const params = { Bucket: bucket, Key: key };
-  const download = new Download({
-    client: s3,
-    params,
-  });
-  const { Body } = await download.done();
+  const command = new GetObjectCommand(params);
+  const response = await s3.send(command);
   const fileStream = fs.createWriteStream(destPath);
-  Body.pipe(fileStream);
+  response.Body.pipe(fileStream);
   return destPath;
 }
 
