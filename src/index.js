@@ -75,6 +75,7 @@ async function run() {
   console.log(JSON.stringify(context, null, 2));
   const sha = context.payload.after;
   const prefix = s3KeyPrefix || `coverage/${context.payload.repository.full_name}`;
+  const head = context.payload.pull_request && context.payload.pull_request.head.sha;
   const baseGitCommit = (context.payload.pull_request || { base: {} }).base.sha;
   const prNumber = (context.payload.pull_request || {}).number;
   const prUrl = (context.payload.pull_request || {}).html_url;
@@ -139,7 +140,7 @@ async function run() {
     createCommitStatus({
       client,
       context,
-      sha,
+      sha: head,
       status: generateStatus({ targetUrl: prUrl, metric, statusContext }),
     });
   }
