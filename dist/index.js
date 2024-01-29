@@ -69029,10 +69029,13 @@ fs.readFileAsync = (filename) => new Promise(
 const parser = new xml2js.Parser(/* options */);
 
 async function readFile(filename, ignoreError = false) {
+  let content = '';
   try {
-    return parser.parseStringPromise(await fs.readFileAsync(filename));
+    content = await fs.readFileAsync(filename);
+    return parser.parseStringPromise(content);
   } catch (error) {
     if (!ignoreError) {
+      console.error(`Error parsing content of ${filename}`, content);
       throw error;
     }
     console.warn('[ignored] Error while parsing', error);
