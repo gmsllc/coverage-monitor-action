@@ -69265,17 +69265,22 @@ module.exports = {
 /***/ 8396:
 /***/ ((module) => {
 
-const createCommitStatus = ({
+const createCommitStatus = async ({
   client,
   context,
   sha,
   status,
 }) => {
-  client.rest.repos.createCommitStatus({
-    ...context.repo,
-    sha,
-    ...status,
-  });
+  try {
+    await client.rest.repos.createCommitStatus({
+      ...context.repo,
+      sha,
+      ...status,
+    });
+  } catch (error) {
+    console.error('Failed to createCommitStatus', { ...status, sha, error });
+    throw error;
+  }
 };
 
 const listComments = async ({
@@ -69284,104 +69289,136 @@ const listComments = async ({
   prNumber,
   commentHeader,
 }) => {
-  const { data: existingComments } = await client.rest.issues.listComments({
-    ...context.repo,
-    issue_number: prNumber,
-  });
+  try {
+    const { data: existingComments } = await client.rest.issues.listComments({
+      ...context.repo,
+      issue_number: prNumber,
+    });
 
-  return existingComments.filter(({ body }) => body.startsWith(commentHeader));
+    return existingComments.filter(({ body }) => body.startsWith(commentHeader));
+  } catch (error) {
+    console.error('Failed to listComments', { error, prNumber });
+    throw error;
+  }
 };
 
-const insertComment = ({
+const insertComment = async ({
   client,
   context,
   prNumber,
   body,
 }) => {
-  client.rest.issues.createComment({
-    ...context.repo,
-    issue_number: prNumber,
-    body,
-  });
+  try {
+    await client.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
+  } catch (error) {
+    console.error('Failed to insertComment', { body, error });
+    throw error;
+  }
 };
 
-const updateComment = ({
+const updateComment = async ({
   client,
   context,
   body,
   commentId,
 }) => {
-  client.rest.issues.updateComment({
-    ...context.repo,
-    comment_id: commentId,
-    body,
-  });
+  try {
+    await client.rest.issues.updateComment({
+      ...context.repo,
+      comment_id: commentId,
+      body,
+    });
+  } catch (error) {
+    console.error('Failed to updateComment', { commentId, body, error });
+    throw error;
+  }
 };
 
-const deleteComments = ({
+const deleteComments = async ({
   client,
   context,
   comments,
 }) => {
-  comments.forEach(({ id }) => {
-    client.rest.issues.deleteComment({
-      ...context.repo,
-      comment_id: id,
-    });
-  });
+  try {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { id } of comments) {
+      // eslint-disable-next-line no-await-in-loop
+      await client.rest.issues.deleteComment({
+        ...context.repo,
+        comment_id: id,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to deleteComments', { comments, error });
+    throw error;
+  }
 };
 
-const upsertComment = ({
+const upsertComment = async ({
   client,
   context,
   prNumber,
   body,
   existingComments,
 }) => {
-  const last = existingComments.pop();
+  try {
+    const last = existingComments.pop();
 
-  deleteComments({
-    client,
-    context,
-    comments: existingComments,
-  });
-
-  if (last) {
-    updateComment({
+    await deleteComments({
       client,
       context,
-      body,
-      commentId: last.id,
+      comments: existingComments,
     });
-  } else {
-    insertComment({
+
+    if (last) {
+      await updateComment({
+        client,
+        context,
+        body,
+        commentId: last.id,
+      });
+    } else {
+      await insertComment({
+        client,
+        context,
+        prNumber,
+        body,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to upserComment', { prNumber, body, error });
+    throw error;
+  }
+};
+
+const replaceComment = async ({
+  client,
+  context,
+  prNumber,
+  body,
+  existingComments,
+}) => {
+  try {
+    await deleteComments({
+      client,
+      context,
+      comments: existingComments,
+    });
+
+    await insertComment({
       client,
       context,
       prNumber,
       body,
     });
+  } catch (error) {
+    console.log('Failed to replaceComment', error);
+    throw error;
   }
-};
-
-const replaceComment = ({
-  client,
-  context,
-  prNumber,
-  body,
-  existingComments,
-}) => {
-  deleteComments({
-    client,
-    context,
-    comments: existingComments,
-  });
-
-  insertComment({
-    client,
-    context,
-    prNumber,
-    body,
-  });
 };
 
 module.exports = {
@@ -71506,70 +71543,73 @@ async function run() {
   }
 
   const client = github.getOctokit(githubToken);
-
-  const coverage = await readFile(cloverFile);
-  const baseCoverage = (baseCloverFileS3 || baseCloverFile)
+  try {
+    const coverage = await readFile(cloverFile);
+    const baseCoverage = (baseCloverFileS3 || baseCloverFile)
     && await readFile(baseCloverFileS3 || baseCloverFile, ignoreMissingBase);
-  const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
-  const metric = readMetric(coverage, {
-    thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
-  });
-
-  if (check) {
-    createCommitStatus({
-      client,
-      context,
-      sha: head,
-      status: generateStatus({ targetUrl: prUrl, metric, statusContext }),
+    const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
+    const metric = readMetric(coverage, {
+      thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
     });
-  }
 
-  if (comment) {
-    const message = generateTable({ metric, commentContext });
-
-    switch (commentMode) {
-      case 'insert':
-        await insertComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-        });
-
-        break;
-      case 'update':
-        await upsertComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-          existingComments: await listComments({
-            client,
-            context,
-            prNumber,
-            commentHeader: generateCommentHeader({ commentContext }),
-          }),
-        });
-
-        break;
-      case 'replace':
-      default:
-        await replaceComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-          existingComments: await listComments({
-            client,
-            context,
-            prNumber,
-            commentContext,
-            commentHeader: generateCommentHeader({ commentContext }),
-          }),
-        });
+    if (check) {
+      await createCommitStatus({
+        client,
+        context,
+        sha: head,
+        status: generateStatus({ targetUrl: prUrl, metric, statusContext }),
+      });
     }
-  } else {
-    console.log('Commenting not enabled');
+
+    if (comment) {
+      const message = generateTable({ metric, commentContext });
+
+      switch (commentMode) {
+        case 'insert':
+          await insertComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+          });
+
+          break;
+        case 'update':
+          await upsertComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+            existingComments: await listComments({
+              client,
+              context,
+              prNumber,
+              commentHeader: generateCommentHeader({ commentContext }),
+            }),
+          });
+
+          break;
+        case 'replace':
+        default:
+          await replaceComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+            existingComments: await listComments({
+              client,
+              context,
+              prNumber,
+              commentContext,
+              commentHeader: generateCommentHeader({ commentContext }),
+            }),
+          });
+      }
+    } else {
+      console.log('Commenting not enabled');
+    }
+  } catch (error) {
+    console.error('Error', error);
   }
 }
 

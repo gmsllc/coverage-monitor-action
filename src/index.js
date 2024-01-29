@@ -127,70 +127,73 @@ async function run() {
   }
 
   const client = github.getOctokit(githubToken);
-
-  const coverage = await readFile(cloverFile);
-  const baseCoverage = (baseCloverFileS3 || baseCloverFile)
+  try {
+    const coverage = await readFile(cloverFile);
+    const baseCoverage = (baseCloverFileS3 || baseCloverFile)
     && await readFile(baseCloverFileS3 || baseCloverFile, ignoreMissingBase);
-  const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
-  const metric = readMetric(coverage, {
-    thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
-  });
-
-  if (check) {
-    createCommitStatus({
-      client,
-      context,
-      sha: head,
-      status: generateStatus({ targetUrl: prUrl, metric, statusContext }),
+    const baseMetric = baseCoverage ? readMetric(baseCoverage) : undefined;
+    const metric = readMetric(coverage, {
+      thresholdAlert, thresholdWarning, baseMetric, diffTolerance,
     });
-  }
 
-  if (comment) {
-    const message = generateTable({ metric, commentContext });
-
-    switch (commentMode) {
-      case 'insert':
-        await insertComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-        });
-
-        break;
-      case 'update':
-        await upsertComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-          existingComments: await listComments({
-            client,
-            context,
-            prNumber,
-            commentHeader: generateCommentHeader({ commentContext }),
-          }),
-        });
-
-        break;
-      case 'replace':
-      default:
-        await replaceComment({
-          client,
-          context,
-          prNumber,
-          body: message,
-          existingComments: await listComments({
-            client,
-            context,
-            prNumber,
-            commentContext,
-            commentHeader: generateCommentHeader({ commentContext }),
-          }),
-        });
+    if (check) {
+      await createCommitStatus({
+        client,
+        context,
+        sha: head,
+        status: generateStatus({ targetUrl: prUrl, metric, statusContext }),
+      });
     }
-  } else {
-    console.log('Commenting not enabled');
+
+    if (comment) {
+      const message = generateTable({ metric, commentContext });
+
+      switch (commentMode) {
+        case 'insert':
+          await insertComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+          });
+
+          break;
+        case 'update':
+          await upsertComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+            existingComments: await listComments({
+              client,
+              context,
+              prNumber,
+              commentHeader: generateCommentHeader({ commentContext }),
+            }),
+          });
+
+          break;
+        case 'replace':
+        default:
+          await replaceComment({
+            client,
+            context,
+            prNumber,
+            body: message,
+            existingComments: await listComments({
+              client,
+              context,
+              prNumber,
+              commentContext,
+              commentHeader: generateCommentHeader({ commentContext }),
+            }),
+          });
+      }
+    } else {
+      console.log('Commenting not enabled');
+    }
+  } catch (error) {
+    console.error('Error', error);
   }
 }
 
