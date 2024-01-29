@@ -19,7 +19,7 @@ async function readFile(filename, ignoreError = false) {
   let content = '';
   try {
     content = await fs.readFileAsync(filename);
-    return parser.parseStringPromise(content);
+    return await parser.parseStringPromise(content);
   } catch (error) {
     if (!ignoreError) {
       console.error(`Error parsing content of ${filename}`, content);

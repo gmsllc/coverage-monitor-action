@@ -194,6 +194,7 @@ async function run() {
     }
   } catch (error) {
     console.error('Error', error);
+    throw error;
   }
 }
 
