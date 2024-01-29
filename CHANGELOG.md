@@ -18,6 +18,11 @@ Security - in case of vulnerabilities.
 
 _TBD_
 
+## [0.9.6] 2024-01-29
+
+- Updated deps
+- Updated node version
+
 ## [0.9.4] 2023-06-22
 
 - Updated deps
