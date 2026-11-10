@@ -23,7 +23,7 @@
   "dependencies": {
     "@actions/core": "^1.10.1",
     "@actions/github": "^6.0.0",
-    "@aws-sdk/client-s3": "^3.501.0",
+    "@aws-sdk/client-s3": "^3.1166.0",
     "@aws-sdk/lib-storage": "^3.501.0",
     "@vercel/ncc": "^0.38.1",
     "exponential-backoff": "^3.1.1",
